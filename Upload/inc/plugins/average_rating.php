@@ -17,6 +17,11 @@
 
 */
 
+/*
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL); */
+
 if(!defined("IN_MYBB")) {
     die("Direct access not allowed.");
 }
@@ -80,11 +85,21 @@ function average_rating_install() {
         'description' => $db->escape_string($lang->avg_profile_ratings_enabled_desc),
         'optionscode' => 'yesno',
         'value' => '1',
-        'disporder' => 1,
+        'disporder' => 0,
         'isdefault' => 0,
         'gid' => $group['gid']
     );
     
+    $settings[] = array(
+        'name' => 'average_rating_forums',
+        'title' => $db->escape_string($lang->avg_profile_ratings_forums),
+        'description' => $db->escape_string($lang->avg_profile_ratings_forums_desc),
+        'optionscode' => "forumselect",
+        'value' => '-1',
+        'disporder' => 1,
+        'isdefault' => 0,
+        'gid' => $group['gid']
+    );
     
     $settings[] = array(
         'name' => 'average_rating_groups',
@@ -127,7 +142,7 @@ function average_rating_install() {
     $template['average_profile_rating'] = '
 <tr>
     <td class="trow2"><strong>{$lang->average_profile_ratings_label}</strong></td>
-    <td class="trow2">
+    <td class="trow2" style="padding-left: 0px;">
     
         <div style="float: left; max-width: 110px; {$displaytag}"><table style="padding: 0px; border: 0px;">
             <table style="padding: 0px; border: 0px;">
@@ -183,12 +198,33 @@ function average_rating_is_installed () {
     return (isset($mybb->settings['average_rating_enabled']));
 }
     
+
+/* DEVELOPERS: HOW TO USE MULTIPLE RATINGS: 
+   The function below doubles as a helper function. It can be called as follows: 
+
+   $mynewvariable = average_rating_parse_profile("1,2,3", "average_profile_rating");
+   Where the second argument is any template you choose, and the first is a comma delimited list of forums. 
+
+   You will need to set this variable yourself with your own function. 
+   This can be done with an additional hook, if desired. 
+   This will allow this plugin to generate multiple averages, as needed.
+*/
     
-function average_rating_parse_profile () {
+function average_rating_parse_profile ($forumSelect = 0, $avg_template = "average_profile_rating") {
     global $mybb, $avg_rating, $templates, $lang;
-    $avg_rating = ""; // Set this to avoid PHP notices on some servers. 
+
     $lang->load("avg_ratings");
+    $forums = $mybb->settings['average_rating_forums'];
+
+    $avg_rating = ""; // Set this to avoid PHP notices on some servers. 
+    $rating = '';
+    $not_rated = '';
     $displaytag = ""; // Initialize to prevent server notices. 
+
+    // If this function is called with parameters, let's use the parameters instead of relying on the plugin's settings. 
+    if (!empty($forumSelect)) {
+        $forums = $forumSelect;
+    }
 
     // Return if the user is not allowed to view ratings at all. 
     if (!average_rating_permissions($mybb->settings['average_rating_groups_visible'])) {
@@ -197,21 +233,21 @@ function average_rating_parse_profile () {
 
     // Now we need to see if the user whose profile we are on is in an enabled usergroup. If so, calculate the ratings. 
     if (average_rating_permissions($mybb->settings['average_rating_groups'], intval($mybb->input['uid']))) {
-        $rating = '';
-        $ratingData = average_rating_get_ratings($mybb->input['uid']);
+
+        $ratingData = average_rating_get_ratings($mybb->input['uid'], $forums); // Get the rating data. 
 
         // Handle if we haven't reached a minimum rating count. 
         if ($ratingData['numratings'] < $mybb->settings['average_rating_min']) {
             $ratingData['averagerating'] = 0;
         }
 
+        // Build the rating values (for use in templates)
         $ratingData['averagerating'] = (float)round($ratingData['averagerating'], 2);
         $ratingsvotesav = (float) $ratingData['averagerating'];
         $ratingData['width'] = (int)round($ratingData['averagerating'])*20;
         $ratingData['numratings'] = (int)$ratingData['numratings'];
         $ratingvotesav = $lang->sprintf($lang->rating_votes_average, $ratingData['numratings'], $ratingData['averagerating']);
         
-        $not_rated = '';
         if(!isset($ratingData['rated']) || empty($ratingData['rated']) || ($ratingData['numratings'] < $mybb->settings['average_rating_min'])) {
             $not_rated = ' star_rating_notrated';
         }
@@ -240,23 +276,41 @@ function average_rating_parse_profile () {
             $rating_num_text = ""; 
         }
 
-        eval("\$avg_rating = \"".$templates->get("average_profile_rating")."\";");
+        // If forumselect is passed, we don't set the variable and instead return the value. 
+        if (empty($forumSelect)) {
+            eval("\$avg_rating = \"".$templates->get("average_profile_rating")."\";");
+        } else {
+            return $templates->get($avg_template)."\";";
+        }
     }
 }
 
 
-function average_rating_get_ratings ($userID) {
+function average_rating_get_ratings ($userID, $forums) {
     global $mybb, $db;
     $uid = (int) $userID;
+
     $ratings['rated'] = 0;
+    $ratings['tid'] = 0; 
+    $rations['averagerating'] = 0;
+    $ratings['numratings'] = 0;
+
+    // Build a list of forums available for the query. 
+    if ($forums != "-1") {
+        $forums = $db->escape_string($forums); 
+        $forumClause = " AND t.fid IN (".$forums.")";
+    }
     
-    $qdata = $db->query("SELECT COUNT(*) AS rcount FROM ".TABLE_PREFIX."threadratings r LEFT JOIN ".TABLE_PREFIX."threads t ON r.tid = t.tid WHERE t.uid = ".$uid.";");
-    $ratings['numratings'] = (int) $db->fetch_field($qdata, "rcount");
+    // Skip running the queries if no forums are selected. 
+    if (!empty($forums)) {
+        $qdata = $db->query("SELECT COUNT(*) AS rcount FROM ".TABLE_PREFIX."threadratings r LEFT JOIN ".TABLE_PREFIX."threads t ON r.tid = t.tid WHERE t.uid = ".$uid." " . $forumClause . ";");
+        $ratings['numratings'] = (int) $db->fetch_field($qdata, "rcount");
+        
+        $qdata2 = $db->query("SELECT AVG(rating) avgrating FROM ".TABLE_PREFIX."threadratings r LEFT JOIN ".TABLE_PREFIX."threads t ON r.tid = t.tid WHERE t.uid = ".$uid." " . $forumClause . ";");
+        $ratings['averagerating'] = (float) $db->fetch_field($qdata2, "avgrating");
+    }
     
-    $qdata2 = $db->query("SELECT AVG(rating) avgrating FROM ".TABLE_PREFIX."threadratings r LEFT JOIN ".TABLE_PREFIX."threads t ON r.tid = t.tid WHERE t.uid = ".$uid.";");
-    $ratings['averagerating'] = (float) $db->fetch_field($qdata2, "avgrating");
-    $ratings['tid'] = 0;
-    
+    // Necessary for javascript. 
     if ($ratings['averagerating'] != 0) {
         $ratings['rated'] = 1;
     }

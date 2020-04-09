@@ -1,10 +1,13 @@
 <?php
 
 $l['avg_profile_ratings_name'] = "Average Profile Ratings";
-$l['avg_profile_ratings_desc'] = "Displays the average rating of threads the user has created on their profile.";
+$l['avg_profile_ratings_desc'] = "Displays the average rating of threads the user has created on their profile. ";
 
 $l['avg_profile_ratings_enabled'] = "Enable Average Profile Ratings";
 $l['avg_profile_ratings_enabled_desc'] = "Enable or disable without uninstalling this plugin.";
+
+$l['avg_profile_ratings_forums'] = "Boards to Include: ";
+$l['avg_profile_ratings_forums_desc'] = "Select which boards/forums to include in the average. All other forums will be ignored.";
 
 $l['avg_profile_ratings_groups'] = "Groups Enabled for Calculating Averages: ";
 $l['avg_profile_ratings_groups_desc'] = "By default, this plugin calculates averages on <i>all user profiles.</i> However, it can be made to only calculate for specific usergroups. Select these here.";
