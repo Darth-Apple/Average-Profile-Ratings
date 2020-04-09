@@ -280,7 +280,8 @@ function average_rating_parse_profile ($forumSelect = 0, $avg_template = "averag
         if (empty($forumSelect)) {
             eval("\$avg_rating = \"".$templates->get("average_profile_rating")."\";");
         } else {
-            return $templates->get($avg_template)."\";";
+            eval("\$alt_variable = \"".$templates->get($avg_template)."\";");
+            return $alt_variable;
         }
     }
 }
