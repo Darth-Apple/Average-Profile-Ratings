@@ -20,7 +20,7 @@
 /*
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
-error_reporting(E_ALL); */
+error_reporting(E_ALL);  */
 
 if(!defined("IN_MYBB")) {
     die("Direct access not allowed.");
@@ -50,17 +50,58 @@ function average_rating_info() {
     }
 
 function average_rating_activate() {
-    // Template modifications will go here. 
-
+    global $db; 
+    
     require MYBB_ROOT.'/inc/adminfunctions_templates.php';
+    require_once MYBB_ADMIN_DIR . "inc/functions_themes.php";
+
+    // Now, we will link the star_rating.css file to the member.php file. No pluginlibrary required! 
+    // Many thanks to MySupport for inspiration/code and Omar G. for implementation. 
+    
+    $query = $db->simple_select("themestylesheets", "sid, attachedto", "name = 'star_ratings.css'"); 
+
+    while($stylesheet = $db->fetch_array($query)) {
+        $update = array(
+            "attachedto" => $db->escape_string($stylesheet['attachedto'].'|member.php'),
+            "lastmodified" => TIME_NOW
+        );
+        $db->update_query("themestylesheets", $update, "sid = " . intval($stylesheet['sid']));
+    }
+
+    $query = $db->query("SELECT * FROM ".TABLE_PREFIX."themes;");
+    while($updatedTheme = $db->fetch_array($query)) {
+        update_theme_stylesheet_list($updatedTheme['tid']);
+    }
+
     find_replace_templatesets('member_profile', '#{\$reputation}#', '{\$reputation}<!-- AVGRating -->{$avg_rating}<!-- /AVGRating -->');
 }
 
 function average_rating_deactivate () {
-    // Undo any template modifications. 
+    global $db; 
 
     require MYBB_ROOT.'/inc/adminfunctions_templates.php';
+    require_once MYBB_ADMIN_DIR . "inc/functions_themes.php";
+
     find_replace_templatesets('member_profile', '#\<!--\sAVGRating\s--\>\{\$([a-zA-Z_]+)?\}<!--\s/AVGRating\s--\>#is', '', 0);
+
+    // We must unlink star_rating.css from stylesheets upon deactivation.  
+    // Many thanks to MySupport for inspiration/code and Omar G. for implementation. 
+    
+    $query = $db->simple_select("themestylesheets", "sid, attachedto", "name = 'star_ratings.css'"); 
+
+    while($stylesheet = $db->fetch_array($query)) {
+        $unattach = str_replace('|member.php', '', $stylesheet['attachedto']);
+        $update = array(
+            "attachedto" => $db->escape_string($unattach),
+            "lastmodified" => TIME_NOW
+        );
+        $db->update_query("themestylesheets", $update, "sid = " . intval($stylesheet['sid']));
+    }
+
+    $query = $db->query("SELECT * FROM ".TABLE_PREFIX."themes;");
+    while($updatedTheme = $db->fetch_array($query)) {
+        update_theme_stylesheet_list($updatedTheme['tid']);
+    }
 }
 
 function average_rating_install() {
@@ -216,10 +257,10 @@ function average_rating_parse_profile ($forumSelect = 0, $avg_template = "averag
     $lang->load("avg_ratings");
     $forums = $mybb->settings['average_rating_forums'];
 
-    $avg_rating = ""; // Set this to avoid PHP notices on some servers. 
+    $avg_rating = ""; 
     $rating = '';
     $not_rated = '';
-    $displaytag = ""; // Initialize to prevent server notices. 
+    $displaytag = ""; 
 
     // If this function is called with parameters, let's use the parameters instead of relying on the plugin's settings. 
     if (!empty($forumSelect)) {
@@ -286,7 +327,7 @@ function average_rating_parse_profile ($forumSelect = 0, $avg_template = "averag
     }
 }
 
-
+// Helper function that sets variables that are normally in $thread for thread display. 
 function average_rating_get_ratings ($userID, $forums) {
     global $mybb, $db;
     $uid = (int) $userID;
@@ -320,7 +361,7 @@ function average_rating_get_ratings ($userID, $forums) {
 
 
 // This function checks whether this user is in an enabled usergroup. 
-// We must check both additional usergroups and primary usergroups, hence this function. 
+// We must check both additional usergroups and primary usergroups. 
 function average_rating_permissions ($avgrating_groups, $userID=0) {
     global $mybb, $db;
 
