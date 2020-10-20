@@ -171,7 +171,7 @@ function average_rating_install() {
         'title' => $db->escape_string($lang->avg_profile_ratings_min),
         'description' => $db->escape_string($lang->avg_profile_ratings_min_desc),
         'optionscode' => "numeric",
-        'value' => '3',
+        'value' => '1',
         'disporder' => 4,
         'isdefault' => 0,
         'gid' => $group['gid']
@@ -236,8 +236,12 @@ function average_rating_uninstall() {
 
 // Are we installed? 
 function average_rating_is_installed () {
-    global $mybb;
-    return (isset($mybb->settings['average_rating_enabled']));
+	global $db;
+	$query = $db->query("SELECT * FROM ".TABLE_PREFIX."templates WHERE `title` = 'average_profile_rating';");
+	if ($db->fetch_array($query)) {
+		return true; 
+	}
+	return false; 
 }
     
 
