@@ -17,11 +17,6 @@
 
 */
 
-/*
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);  */
-
 if(!defined("IN_MYBB")) {
     die("Direct access not allowed.");
 }
@@ -254,7 +249,7 @@ function average_rating_is_installed () {
 
    You will need to set this variable yourself with your own function. 
    This can be done with an additional hook, if desired. 
-   This will allow this plugin to generate multiple averages, as needed.
+   This will allow this plugin to generate multiple averages as needed.
 */
     
 function average_rating_parse_profile ($forumSelect = 0, $avg_template = "average_profile_rating") {
