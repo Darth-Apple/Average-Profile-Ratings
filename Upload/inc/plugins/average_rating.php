@@ -45,7 +45,7 @@ function average_rating_info() {
             'website'		=> 'https://makestation.net',
             'author'		=> 'Darth Apple',
             'authorsite'	=> 'http://www.makestation.net',
-            'version'		=> '0.1',
+            'version'		=> '1.0',
             "compatibility"	=> "18*"
         );
     }
