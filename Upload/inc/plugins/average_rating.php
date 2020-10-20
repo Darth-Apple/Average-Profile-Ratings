@@ -43,6 +43,7 @@ function average_rating_info() {
             'name'			=> $lang->avg_profile_ratings_name,
             'description'	=> $lang->avg_profile_ratings_desc,
             'website'		=> 'https://makestation.net',
+            'codename'      => 'avgratings',
             'author'		=> 'Darth Apple',
             'authorsite'	=> 'http://www.makestation.net',
             'version'		=> '1.0',
