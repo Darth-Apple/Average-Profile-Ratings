@@ -3,12 +3,9 @@ README:
 ---------------------------------------------------------------------------------------------------------
 BETA PLUGIN. USE AT YOUR OWN RISK. 
 ---------------------------------------------------------------------------------------------------------
-KNOWN ISSUE: You MUST link the star_rating.css file to member.php for this plugin to work.  If 
-this stylesheet is not manually linked via your ACP (click Options -> Properties on the stylesheet), 
-this plugin will fail to load the star ratings properly. This will be fixed before release! 
----------------------------------------------------------------------------------------------------------
 
-This plugin calculates the average rating of a user's threads, and displays in their profile. 
+This plugin calculates the average rating of a user's threads, and displays in their profile. A special
+thanks to Omar G. for contributions, and to tc4me and Sawedoff for feedback and testing!  
 
 You are using a beta version of this plugin. You may use this on a live board at your own risk. 
 Full release will be coming soon. 
@@ -32,6 +29,10 @@ There are two separate usergroup settings.
    - Visible Groups: This defines which groups are allowed to see ratings, regardless of whether 
     they are calculated or not. Use this setting to disable guests from viewing, for example. 
 
+Included Forums: 
+   - This setting allows this plugin to only include ratings for threads in specific forums. 
+     By default, all forums are supported. This can be edited in your ACP. 
+     
  Min threshold: Allows you to only calculate ratings if the user has a minimum threshold. This is 
     sometimes necessary because users with only a few ratings can show inaccurate content ratings 
     respective to their actual posts. If, for example, a user has only one rating and this rating 

@@ -32,6 +32,7 @@ $templatelist.= ',average_profile_ratings';
 // Add the hook to the end of the profile. 
 if (isset($mybb->settings['average_rating_enabled']) && !empty($mybb->settings['average_rating_enabled'])) {
     $plugins->add_hook("member_profile_end", "average_rating_parse_profile");
+    $plugins->add_hook("global_start", "average_rating_load_template");
 }
 
 function average_rating_info() {
@@ -41,7 +42,7 @@ function average_rating_info() {
         return array (
             'name'			=> $lang->avg_profile_ratings_name,
             'description'	=> $lang->avg_profile_ratings_desc,
-            'website'		=> 'https://community.mybb.com',
+            'website'		=> 'https://makestation.net',
             'author'		=> 'Darth Apple',
             'authorsite'	=> 'http://www.makestation.net',
             'version'		=> '0.1',
@@ -170,7 +171,7 @@ function average_rating_install() {
         'title' => $db->escape_string($lang->avg_profile_ratings_min),
         'description' => $db->escape_string($lang->avg_profile_ratings_min_desc),
         'optionscode' => "numeric",
-        'value' => '1',
+        'value' => '3',
         'disporder' => 4,
         'isdefault' => 0,
         'gid' => $group['gid']
@@ -406,4 +407,9 @@ function average_rating_permissions ($avgrating_groups, $userID=0) {
     }
     // User is not in a valid usergroup to view this announcement. Return false. 
     return false;
+}
+
+function average_rating_load_template() {
+    global $templatelist;
+    $templatelist.= ',average_profile_rating';
 }
