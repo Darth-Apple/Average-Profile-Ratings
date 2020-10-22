@@ -1,6 +1,6 @@
----------------------------------------------------------------------------------------------------------
+------------------------------------------------------
 AVERAGE THREAD RATINGS (FOR USER PROFILES):  
----------------------------------------------------------------------------------------------------------
+------------------------------------------------------
 
 This plugin displays a user's average thread rating on their profile. A special
 thanks to Omar G. for contributions, and to tc4me, Sawedoff, and Eldenroot for feedback and testing!  
@@ -21,6 +21,7 @@ INSTALLATION:
 -------------------------------------------
  - Upload the contents of the /Upload folder to your forum root. 
  - Install and activate via ACP -> Configuration -> Plugins.
+ - Many thanks to Jonny (tc4me) from https://autism4all.at for the German translation of this plugin. Both English and German are included with this repository, no external language packs required! 
 
 -------------------------------------------
 SETTINGS: 
